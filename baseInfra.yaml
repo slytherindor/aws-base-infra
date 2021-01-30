@@ -59,7 +59,7 @@ Resources:
     Properties:
       CidrBlock: '10.0.1.0/24'
       VpcId: !Ref BaseVPC
-      AvailabilityZone: !Select [0, !GetAZs ]
+      AvailabilityZone: !Select [1, !GetAZs ]
       MapPublicIpOnLaunch: true
       Tags:
         - Key: 'Name'
