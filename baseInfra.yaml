@@ -1,92 +1,79 @@
-AWSTemplateFormatVersion: '2010-09-09'
-Description: 'Base infrastructure for hosting some personal projects'
-
-Mappings: 
-  RegionMap: 
-    us-east-1: 
-      "HVM64": "ami-0ff8a91507f77f867"
-    us-west-1: 
-      "HVM64": "ami-0bdb828fd58c52235"
-    eu-west-1: 
-      "HVM64": "ami-047bb4163c506cd98"
-    ap-southeast-1: 
-      "HVM64": "ami-08569b978cc4dfa10"
-    ap-northeast-1: 
-      "HVM64": "ami-06cd52961ce9f0d85"
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Base infrastructure for hosting some personal projects"
 
 Resources:
   BaseVPC:
     Type: AWS::EC2::VPC
     Properties:
-      CidrBlock: '10.0.0.0/16'
+      CidrBlock: "10.0.0.0/16"
       EnableDnsHostnames: true
       Tags:
-        - Key: 'Name'
-          Value: 'BaseVPC'
-        - Key: 'Created By'
-          Value: 'Shubhanshu'
-  
+        - Key: "Name"
+          Value: "BaseVPC"
+        - Key: "Created By"
+          Value: "Shubhanshu"
+
   BaseIGW:
     Type: AWS::EC2::InternetGateway
     Properties:
       Tags:
-        - Key: 'Name'
-          Value: 'BaseIGW'
-        - Key: 'Created By'
-          Value: 'Shubhanshu'
-  
+        - Key: "Name"
+          Value: "BaseIGW"
+        - Key: "Created By"
+          Value: "Shubhanshu"
+
   BaseIgwVpcAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
       InternetGatewayId: !Ref BaseIGW
       VpcId: !Ref BaseVPC
-  
+
   PublicSubnetA:
     Type: AWS::EC2::Subnet
     Properties:
-      CidrBlock: '10.0.0.0/24'
+      CidrBlock: "10.0.0.0/24"
       VpcId: !Ref BaseVPC
       AvailabilityZone: !Select [0, !GetAZs ]
       MapPublicIpOnLaunch: true
       Tags:
-        - Key: 'Name'
-          Value: 'Public-A'
-        - Key: 'Type'
-          Value: 'Public'
-  
+        - Key: "Name"
+          Value: "Public-A"
+        - Key: "Type"
+          Value: "Public"
+
   PublicSubnetB:
     Type: AWS::EC2::Subnet
     Properties:
-      CidrBlock: '10.0.1.0/24'
+      CidrBlock: "10.0.1.0/24"
       VpcId: !Ref BaseVPC
       AvailabilityZone: !Select [1, !GetAZs ]
       MapPublicIpOnLaunch: true
       Tags:
-        - Key: 'Name'
-          Value: 'Public-B'
-        - Key: 'Type'
-          Value: 'Public'
-  
+        - Key: "Name"
+          Value: "Public-B"
+        - Key: "Type"
+          Value: "Public"
+
   RouteTablePublic:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref BaseVPC
       Tags:
-        - Key: 'Name'
-          Value: 'Public Routes'
-  
+        - Key: "Name"
+          Value: "Public Routes"
+
   PublicSubnetARouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       RouteTableId: !Ref RouteTablePublic
       SubnetId: !Ref PublicSubnetA
-  
+
   PublicSubnetBRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       RouteTableId: !Ref RouteTablePublic
       SubnetId: !Ref PublicSubnetB
-  
+
   InternetRoutePublic:
     Type: AWS::EC2::Route
     Properties:
@@ -97,9 +84,9 @@ Resources:
   WebDMZSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: 'Allow port 80 and 22 access from internet'
+      GroupDescription: "Allow port 80 and 22 access from internet"
       VpcId: !Ref BaseVPC
-  
+
   HttpFromInternetSGIngress:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
@@ -110,7 +97,7 @@ Resources:
       GroupId: !GetAtt
         - WebDMZSecurityGroup
         - GroupId
-  
+
   SshFromInternetSGIngress:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
@@ -121,24 +108,24 @@ Resources:
       GroupId: !GetAtt
         - WebDMZSecurityGroup
         - GroupId
-  
+
   NaclPublicSubnet:
     Type: AWS::EC2::NetworkAcl
     Properties:
       VpcId: !Ref BaseVPC
-  
+
   PublicSubnetANetworkAclAssociation:
     Type: AWS::EC2::SubnetNetworkAclAssociation
     Properties:
       NetworkAclId: !Ref NaclPublicSubnet
       SubnetId: !Ref PublicSubnetA
-  
+
   PublicSubnetBNetworkAclAssociation:
     Type: AWS::EC2::SubnetNetworkAclAssociation
     Properties:
       NetworkAclId: !Ref NaclPublicSubnet
       SubnetId: !Ref PublicSubnetB
-  
+
   NaclEntryHttpIngress:
     Type: AWS::EC2::NetworkAclEntry
     Properties:
@@ -151,7 +138,7 @@ Resources:
       RuleNumber: 100
       RuleAction: allow
       NetworkAclId: !Ref NaclPublicSubnet
-  
+
   NaclEphemeralPortsEgress:
     Type: AWS::EC2::NetworkAclEntry
     Properties:
@@ -164,7 +151,7 @@ Resources:
       RuleNumber: 200
       RuleAction: allow
       NetworkAclId: !Ref NaclPublicSubnet
-  
+
   NaclEphemeralPortsIngress:
     Type: AWS::EC2::NetworkAclEntry
     Properties:
