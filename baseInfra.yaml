@@ -67,5 +67,74 @@ Resources:
         - Key: 'Type'
           Value: 'Public'
   
+  RouteTablePublic:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref BaseVPC
+      Tags:
+        - Key: 'Name'
+          Value: 'Public Routes'
   
-    
+  PublicSubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref RouteTablePublic
+      SubnetId: !Ref PublicSubnetA
+  
+  PublicSubnetBRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref RouteTablePublic
+      SubnetId: !Ref PublicSubnetB
+  
+  InternetRoutePublic:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref BaseIGW
+      RouteTableId: !Ref RouteTablePublic
+
+  WebDMZSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: 'Allow port 80 and 22 access from internet'
+      VpcId: !Ref BaseVPC
+  
+  HttpFromInternetSGIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 0.0.0.0/0
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 80
+      GroupId: !GetAtt
+        - WebDMZSecurityGroup
+        - GroupId
+  
+  SshFromInternetSGIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 0.0.0.0/0
+      IpProtocol: tcp
+      FromPort: 22
+      ToPort: 22
+      GroupId: !GetAtt
+        - WebDMZSecurityGroup
+        - GroupId
+  
+  NaclPublicSubnet:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+      VpcId: !Ref BaseVPC
+  
+  PublicSubnetANetworkAclAssociation:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      NetworkAclId: !Ref NaclPublicSubnet
+      SubnetId: !Ref PublicSubnetA
+  
+  PublicSubnetBNetworkAclAssociation:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties:
+      NetworkAclId: !Ref NaclPublicSubnet
+      SubnetId: !Ref PublicSubnetB
