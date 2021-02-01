@@ -97,6 +97,17 @@ Resources:
       GroupId: !GetAtt
         - WebDMZSecurityGroup
         - GroupId
+  
+  HttpsFromInternetSGIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      CidrIp: 0.0.0.0/0
+      IpProtocol: tcp
+      FromPort: 443
+      ToPort: 443
+      GroupId: !GetAtt
+        - WebDMZSecurityGroup
+        - GroupId
 
   SshFromInternetSGIngress:
     Type: AWS::EC2::SecurityGroupIngress
@@ -138,6 +149,58 @@ Resources:
       RuleNumber: 100
       RuleAction: allow
       NetworkAclId: !Ref NaclPublicSubnet
+  
+  NaclEntryHttpsIngress:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      CidrBlock: 0.0.0.0/0
+      Egress: false
+      Protocol: 6
+      PortRange:
+        From: 443
+        To: 443
+      RuleNumber: 200
+      RuleAction: allow
+      NetworkAclId: !Ref NaclPublicSubnet
+  
+  NaclEntrySshIngress:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      CidrBlock: 0.0.0.0/0
+      Egress: false
+      Protocol: 6
+      PortRange:
+        From: 22
+        To: 22
+      RuleNumber: 300
+      RuleAction: allow
+      NetworkAclId: !Ref NaclPublicSubnet
+
+  NaclEphemeralPortsIngress:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      CidrBlock: 0.0.0.0/0
+      Egress: false
+      Protocol: 6
+      PortRange:
+        From: 1024
+        To: 65535
+      RuleNumber: 400
+      RuleAction: allow
+      NetworkAclId: !Ref NaclPublicSubnet
+  
+  NaclEntryHttpsEgress:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      CidrBlock: 0.0.0.0/0
+      Egress: true
+      Protocol: 6
+      PortRange:
+        From: 443
+        To: 443
+      RuleNumber: 100
+      RuleAction: allow
+      NetworkAclId: !Ref NaclPublicSubnet
 
   NaclEphemeralPortsEgress:
     Type: AWS::EC2::NetworkAclEntry
@@ -151,16 +214,18 @@ Resources:
       RuleNumber: 200
       RuleAction: allow
       NetworkAclId: !Ref NaclPublicSubnet
-
-  NaclEphemeralPortsIngress:
+  
+  NaclEntryHttpEgress:
     Type: AWS::EC2::NetworkAclEntry
     Properties:
       CidrBlock: 0.0.0.0/0
-      Egress: false
+      Egress: true
       Protocol: 6
       PortRange:
-        From: 1024
-        To: 65535
-      RuleNumber: 200
+        From: 80
+        To: 80
+      RuleNumber: 300
       RuleAction: allow
       NetworkAclId: !Ref NaclPublicSubnet
+
+  
