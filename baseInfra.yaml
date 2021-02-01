@@ -120,6 +120,28 @@ Resources:
         - WebDMZSecurityGroup
         - GroupId
 
+  HttpsFromInternetSGEgress:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      CidrIp: 0.0.0.0/0
+      IpProtocol: tcp
+      FromPort: 443
+      ToPort: 443
+      GroupId: !GetAtt
+        - WebDMZSecurityGroup
+        - GroupId
+  
+  HttpFromInternetSGEgress:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      CidrIp: 0.0.0.0/0
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 80
+      GroupId: !GetAtt
+        - WebDMZSecurityGroup
+        - GroupId
+  
   NaclPublicSubnet:
     Type: AWS::EC2::NetworkAcl
     Properties:
