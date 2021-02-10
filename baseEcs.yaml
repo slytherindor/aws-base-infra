@@ -50,6 +50,14 @@ Resources:
       FromPort: 80
       ToPort: 80
       CidrIp: 0.0.0.0/0
+  EcsSecurityGroupHTTPSinbound:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref "EcsSecurityGroup"
+      IpProtocol: tcp
+      FromPort: 443
+      ToPort: 443
+      CidrIp: 0.0.0.0/0
   EcsSecurityGroupSSHinbound:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
@@ -91,6 +99,20 @@ Resources:
       LoadBalancerArn: !Ref 'ECSALB'
       Port: 80
       Protocol: HTTP
+  
+  ALBHttpsListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    DependsOn: ECSServiceRole
+    Properties:
+      DefaultActions:
+      - Type: forward
+        TargetGroupArn: !Ref 'ECSTG'
+      LoadBalancerArn: !Ref 'ECSALB'
+      Port: 443
+      Protocol: HTTPS
+      Certificates:
+        - CertificateArn: arn:aws:acm:us-east-1:530678340229:certificate/ccfed181-65e5-4e37-b5d3-c9b4c0f63260
+
   ECSALBListenerRule:
     Type: AWS::ElasticLoadBalancingV2::ListenerRule
     # DependsOn: ALBListener
